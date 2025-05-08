@@ -2,6 +2,7 @@
 import { useContext, useState, useEffect } from "react";
 import { listDocs, setDoc } from "@junobuild/core";
 import { motion } from "framer-motion";
+import { useSearchParams } from "react-router-dom";
 
 //-----------Components-----------//
 import NavBar from "../components/NavBar";
@@ -12,6 +13,7 @@ import gemIcon from "../Media/gem.png";
 
 const AccountPage = () => {
   const { user } = useContext(AuthContext);
+  const [searchParams, setSearchParams] = useSearchParams();
   
   // User data state
   const [userInfo, setUserInfo] = useState({
@@ -21,7 +23,8 @@ const AccountPage = () => {
     isValidator: false,
     job_count: 0,
     total_gems: 0,
-    current_gems: 42039, // Dummy value for demo purposes
+    current_gems: 0,
+    transactions: [],
   });
 
   // File upload state
@@ -30,15 +33,23 @@ const AccountPage = () => {
   const [saveMessage, setSaveMessage] = useState("");
   
   // Tabs for different sections
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "profile");
   
-  // Dummy state for gem transactions
+  // Gem transaction state
   const [buyAmount, setBuyAmount] = useState(100);
   const [sellAmount, setSellAmount] = useState(100);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     fetchUserData();
   }, [user]);
+  
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   const fetchUserData = async () => {
     if (!user) return;
@@ -97,24 +108,93 @@ const AccountPage = () => {
     }
   };
 
-  // Dummy functions for gem management
-  const handleBuyGems = () => {
-    setUserInfo(prev => ({
-      ...prev,
-      current_gems: prev.current_gems + buyAmount
-    }));
-    setSaveMessage(`Successfully purchased ${buyAmount} gems!`);
+  // Gem management functions
+  const handleBuyGems = async () => {
+    if (!user || isProcessing || buyAmount <= 0) return;
+    
+    setIsProcessing(true);
+    setSaveMessage("");
+
+    try {
+      // Create a transaction record
+      const transaction = {
+        type: "Purchase",
+        amount: buyAmount,
+        date: new Date().toISOString(),
+        status: "Completed",
+        cost: (buyAmount * 0.1).toFixed(2) + " USD"
+      };
+
+      const updatedUserInfo = {
+        ...userInfo,
+        current_gems: (userInfo.current_gems || 0) + buyAmount,
+        total_gems: (userInfo.total_gems || 0) + buyAmount,
+        transactions: [transaction, ...(userInfo.transactions || [])]
+      };
+      
+      // Update in database
+      await setDoc({
+        collection: "users",
+        doc: {
+          key: user.key,
+          data: updatedUserInfo,
+        },
+      });
+      
+      setUserInfo(updatedUserInfo);
+      setSaveMessage(`Successfully purchased ${buyAmount} gems!`);
+    } catch (error) {
+      console.error("Error buying gems:", error);
+      setSaveMessage("Failed to purchase gems. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handleSellGems = () => {
-    if (userInfo.current_gems >= sellAmount) {
-      setUserInfo(prev => ({
-        ...prev,
-        current_gems: prev.current_gems - sellAmount
-      }));
-      setSaveMessage(`Successfully sold ${sellAmount} gems!`);
-    } else {
+  const handleSellGems = async () => {
+    if (!user || isProcessing || sellAmount <= 0) return;
+    
+    setIsProcessing(true);
+    setSaveMessage("");
+    
+    if ((userInfo.current_gems || 0) < sellAmount) {
       setSaveMessage("Not enough gems to sell!");
+      setIsProcessing(false);
+      return;
+    }
+    
+    try {
+      // Create a transaction record
+      const transaction = {
+        type: "Sale",
+        amount: -sellAmount, // Negative to indicate gems leaving the account
+        date: new Date().toISOString(),
+        status: "Completed",
+        received: (sellAmount * 0.08).toFixed(2) + " USD"
+      };
+
+      const updatedUserInfo = {
+        ...userInfo,
+        current_gems: (userInfo.current_gems || 0) - sellAmount,
+        transactions: [transaction, ...(userInfo.transactions || [])]
+      };
+      
+      // Update in database
+      await setDoc({
+        collection: "users",
+        doc: {
+          key: user.key,
+          data: updatedUserInfo,
+        },
+      });
+      
+      setUserInfo(updatedUserInfo);
+      setSaveMessage(`Successfully sold ${sellAmount} gems!`);
+    } catch (error) {
+      console.error("Error selling gems:", error);
+      setSaveMessage("Failed to sell gems. Please try again.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -333,7 +413,7 @@ const AccountPage = () => {
               </p>
             )}
             
-            {/* Transaction History (Dummy) */}
+            {/* Transaction History */}
             <div className="mt-8">
               <h4 className="text-lg font-medium mb-4">Transaction History</h4>
               <div className="bg-[#333333] rounded-lg border border-[#404040] overflow-hidden">
@@ -347,24 +427,14 @@ const AccountPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b border-[#404040]">
-                      <td className="py-3 px-4">2025-05-07</td>
-                      <td className="py-3 px-4">Purchase</td>
-                      <td className="py-3 px-4">+200 💎</td>
-                      <td className="py-3 px-4"><span className="px-2 py-1 bg-green-900 text-green-300 rounded-md text-xs">Completed</span></td>
-                    </tr>
-                    <tr className="border-b border-[#404040]">
-                      <td className="py-3 px-4">2025-05-05</td>
-                      <td className="py-3 px-4">Earn</td>
-                      <td className="py-3 px-4">+50 💎</td>
-                      <td className="py-3 px-4"><span className="px-2 py-1 bg-green-900 text-green-300 rounded-md text-xs">Completed</span></td>
-                    </tr>
-                    <tr>
-                      <td className="py-3 px-4">2025-05-03</td>
-                      <td className="py-3 px-4">Sell</td>
-                      <td className="py-3 px-4">-100 💎</td>
-                      <td className="py-3 px-4"><span className="px-2 py-1 bg-green-900 text-green-300 rounded-md text-xs">Completed</span></td>
-                    </tr>
+                    {userInfo.transactions.map((transaction, index) => (
+                      <tr key={index} className="border-b border-[#404040]">
+                        <td className="py-3 px-4">{transaction.date}</td>
+                        <td className="py-3 px-4">{transaction.type}</td>
+                        <td className="py-3 px-4">{transaction.amount > 0 ? `+${transaction.amount} 💎` : `${transaction.amount} 💎`}</td>
+                        <td className="py-3 px-4"><span className="px-2 py-1 bg-green-900 text-green-300 rounded-md text-xs">{transaction.status}</span></td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

@@ -24,8 +24,8 @@ const NavBar = () => {
     profile_pic: "",
     isValidator: false,
     job_count: 0,
-    total_gems: 0,
-    current_gems: 0,
+    total_gems: 1000, // Initialize with 1000 gems
+    current_gems: 1000, // Initialize with 1000 gems
   });
 
   useEffect(() => {
@@ -57,14 +57,30 @@ const NavBar = () => {
   const addNewUser = async () => {
     console.log("Adding User");
     try {
+      // Ensure new users get 1000 gems by default
+      const newUserInfo = {
+        ...userInfo,
+        total_gems: 1000,
+        current_gems: 1000,
+        transactions: [
+          {
+            type: "Welcome Bonus",
+            amount: 1000,
+            date: new Date().toISOString(),
+            status: "Completed"
+          }
+        ]
+      };
+
       await setDoc({
         collection: "users",
         doc: {
           key: user.key,
-          data: userInfo,
+          data: newUserInfo,
         },
       });
-      console.log("User added");
+      console.log("User added with 1000 gems");
+      setUserInfo(newUserInfo);
       document.getElementById("onboardingModal").close();
     } catch (error) {
       console.error("Error adding users:", error);
