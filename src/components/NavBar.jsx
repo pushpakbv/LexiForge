@@ -224,7 +224,7 @@ const NavBar = () => {
             </summary>
             <ul className="menu dropdown-content z-[1] w-52 rounded-box bg-[#333333] border border-[#404040] p-2 shadow-lg">
               <li>
-                <a className="text-[#d4d4d4] hover:bg-[#3c3c3c]">Settings</a>
+                <NavLink to="/account" className="text-[#d4d4d4] hover:bg-[#3c3c3c]">Account</NavLink>
               </li>
               <li>
                 <button
@@ -300,7 +300,7 @@ const NavBar = () => {
           <div className="modal-action flex flex-row items-center">
             <p className="text-xs text-[#a0a0a0]">
               You can update these details later on{" "}
-              <span className="font-bold">Settings</span>
+              <span className="font-bold">Account</span>
             </p>
             <form method="dialog">
               <button className="btn bg-[#333333] hover:translate-x-1 hover:animate-pulse hover:bg-[#3c3c3c]">

@@ -9,6 +9,7 @@ import ErrorPage from "../pages/ErrorPage.jsx";
 import ProjectPage from "../pages/ProjectPage.jsx";
 import MinePage from "../pages/MinePage.jsx";
 import InspectPage from "../pages/InspectPage.jsx";
+import AccountPage from "../pages/AccountPage.jsx";
 
 const router = createBrowserRouter([
   {
@@ -25,20 +26,11 @@ const router = createBrowserRouter([
     path: "marketplace",
     element: <MarketplacePage />,
     errorElement: <ErrorPage />,
-    // children: [
-    //   {
-    //     path: ":id",
-    //     element: <ProjectPage />,
-    //     errorElement: <ErrorPage />,
-    //     children: [
-    //       {
-    //         path: "mine",
-    //         element: <MinePage />,
-    //         errorElement: <ErrorPage />,
-    //       },
-    //     ],
-    //   },
-    // ],
+  },
+  {
+    path: "account",
+    element: <AccountPage />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "project/:id",
