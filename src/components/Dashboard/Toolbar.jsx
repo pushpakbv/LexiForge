@@ -16,31 +16,6 @@ const ToolBar = ({ toggleCreatorView, toggle }) => {
   return (
     <header className="mt-24 w-full max-w-[95%] mb-4">
       <div className="flex items-center justify-between p-6 rounded-xl bg-[#2d2d2d] border border-[#404040] shadow-lg">
-        {/* Quick Actions */}
-        <div className="flex items-center gap-6">
-          <h3 className="text-[#d4d4d4] font-medium">Quick Actions:</h3>
-          <div className="flex gap-4">
-            <button 
-              className="px-6 py-2 bg-[#333333] text-[#d4d4d4] rounded-lg border border-[#404040] hover:bg-[#3c3c3c] hover:text-white transition-all duration-200 flex items-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 4h6v6h-6z"/>
-                <path d="M4 14h6v6H4z"/>
-                <path d="M17 10 7 20"/>
-              </svg>
-              Mine
-            </button>
-            <button 
-              className="px-6 py-2 bg-[#333333] text-[#d4d4d4] rounded-lg border border-[#404040] hover:bg-[#3c3c3c] hover:text-white transition-all duration-200 flex items-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m21.21 15.89-9.02 4.68a1.98 1.98 0 0 1-1.86 0l-9.02-4.68a2 2 0 0 1-1.11-1.79V8.32c0-.76.43-1.45 1.11-1.79L10.33 2a1.98 1.98 0 0 1 1.86 0l9.02 4.68a2 2 0 0 1 1.11 1.79v5.63c0 .76-.43 1.45-1.11 1.79Z"/>
-              </svg>
-              Inspect
-            </button>
-          </div>
-        </div>
-
         {/* Stats */}
         <div className="flex items-center gap-6">
           <h3 className="text-[#d4d4d4] font-medium">Lifetime Stats:</h3>

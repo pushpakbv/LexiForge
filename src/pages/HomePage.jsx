@@ -280,25 +280,6 @@ const HomePage = () => {
               </motion.div>
             ))}
           </div>
-
-          <motion.div 
-            className="mt-12 text-center"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-          >
-            <p className="tracking-tight mb-4 text-[#d4d4d4]">↓ Join our mailing list for Beta access ↓</p>
-            <div className="max-w-md mx-auto">
-              <label className="input input-bordered flex items-center gap-2 bg-[#333333] border-[#404040] text-[#d4d4d4]">
-                <span className="text-[#a0a0a0]">Email</span>
-                <input 
-                  type="text" 
-                  className="grow bg-transparent focus:outline-none" 
-                  placeholder="YourEmail@AI.com" 
-                />
-              </label>
-            </div>
-          </motion.div>
         </div>
       </Section>
 
@@ -401,36 +382,6 @@ const HomePage = () => {
                 Imagine a world where access to unbiased and large-scale
                 training data is not a bottleneck for AI development.
               </motion.p>
-
-              {/* Stats Section */}
-              <motion.div 
-                className="grid grid-cols-3 gap-6 mt-12"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1 }}
-              >
-                {[
-                  { number: "500K+", label: "Data Points", color: "from-[#F58853]" },
-                  { number: "10K+", label: "Contributors", color: "from-purple-400" },
-                  { number: "99%", label: "Accuracy", color: "from-[#4C85FB]" }
-                ].map((stat, i) => (
-                  <motion.div 
-                    key={i}
-                    className="text-center p-4 rounded-xl bg-[#333333]/50 backdrop-blur-sm"
-                    whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
-                  >
-                    <motion.p 
-                      className={`text-3xl font-bold mb-2 bg-gradient-to-r ${stat.color} to-transparent bg-clip-text text-transparent`}
-                      initial={{ scale: 0 }}
-                      whileInView={{ scale: 1 }}
-                      transition={{ delay: 1.2 + i * 0.1, type: "spring" }}
-                    >
-                      {stat.number}
-                    </motion.p>
-                    <p className="text-[#a0a0a0]">{stat.label}</p>
-                  </motion.div>
-                ))}
-              </motion.div>
             </motion.div>
           </div>
         </div>

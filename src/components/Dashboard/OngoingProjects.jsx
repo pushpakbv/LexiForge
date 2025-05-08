@@ -6,19 +6,48 @@ import { AuthContext } from "../../Auth";
 const OngoingProjects = ({ selectProjectDetails, toggle }) => {
   const { user } = useContext(AuthContext);
   const [items, setItems] = useState([]);
+  
+  // Helper function to filter out duplicate projects
+  const filterDuplicateProjects = (projects) => {
+    const seen = new Map();
+    const filteredProjects = [];
+    
+    // Keep only one instance of projects with the same title
+    for (const project of projects) {
+      if (project.data.title && project.data.title.toLowerCase() === 'jain project') {
+        // If we've already seen a 'jain project', skip it
+        if (!seen.has(project.data.title.toLowerCase())) {
+          seen.set(project.data.title.toLowerCase(), project);
+          filteredProjects.push(project);
+        }
+      } else {
+        // Keep all non-'jain project' projects
+        filteredProjects.push(project);
+      }
+    }
+    
+    return filteredProjects;
+  };
 
   const getProjects = async () => {
-    let { items } = await listDocs({
-      collection: "projects",
-    });
-    console.log("Retrieved Projects", items, toggle);
+    try {
+      let { items } = await listDocs({
+        collection: "projects",
+      });
+      console.log("Retrieved Projects", items, toggle);
 
-    // If toggle = true, creator filter
-    if (toggle) {
-      items = items.filter((item) => item.data.creator_id === user.key);
+      // Filter out duplicate 'jain project' entries
+      items = filterDuplicateProjects(items);
+
+      // If toggle = true, creator filter
+      if (toggle) {
+        items = items.filter((item) => item.data.creator_id === user.key);
+      }
+
+      setItems(items);
+    } catch (err) {
+      console.error("Error fetching projects:", err);
     }
-
-    setItems(items);
   };
 
   useEffect(() => {
