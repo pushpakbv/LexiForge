@@ -191,33 +191,54 @@ const InspectPage = () => {
     }
   };
 
-  const advanceIndex = () => {
-    // Check if we're at the end of the paraphrases array
-    if (index + 1 >= paraphrases.length) {
-      // If we're at the end, show a message or handle it appropriately
-      console.log("No more paraphrases to review");
-      return;
-    }
-
+  const advanceIndex = async () => {
     try {
+      // Refresh the paraphrases data first to get accurate count
+      const data = await listDocs({
+        collection: "paraphrases",
+      });
+      // Find paraphrases with the subject
+      const filteredData = data.items.filter(
+        (item) => item.data.subject_id === location.state,
+      );
+
+      let results = [];
+      filteredData.forEach((item) => {
+        results.push([
+          item.data.paraphrase,
+          item.key,
+          item.data.approvalCount + item.data.rejectionCount,
+        ]);
+      });
+
+      // Now check if we're at the end with fresh data
+      if (index + 1 >= results.length) {
+        // If we're at the end, show a message or handle it appropriately
+        console.log("No more paraphrases to review");
+        return;
+      }
+
       // Advance to the next paraphrase
       const nextIndex = index + 1;
       console.log(`Moving from paraphrase ${index} to ${nextIndex}`);
-      
+
       // Set the new index
       setIndex(nextIndex);
-      
+
+      // Update paraphrases state with fresh data
+      setParaphrases(results);
+
       // Update the current count for the next paraphrase
-      if (paraphrases[nextIndex] && paraphrases[nextIndex][2] !== undefined) {
-        console.log(`Setting current count to ${paraphrases[nextIndex][2]}`);
-        setCurrentCount(paraphrases[nextIndex][2]);
+      if (results[nextIndex] && results[nextIndex][2] !== undefined) {
+        console.log(`Setting current count to ${results[nextIndex][2]}`);
+        setCurrentCount(results[nextIndex][2]);
       } else {
         console.log("Count data not available for next paraphrase");
       }
-      
+
       // Reset the submitted state
       setIsSubmitted(false);
-      
+
       console.log("Successfully advanced to next paraphrase");
     } catch (error) {
       console.error("Error advancing to next paraphrase:", error);
@@ -237,7 +258,7 @@ const InspectPage = () => {
         {/* Back Button */}
         <NavLink
           to={`/project/${id}`}
-          className="absolute left-8 top-8 flex items-center gap-2 px-4 py-2 text-[#d4d4d4] bg-[#333333] rounded-lg border border-[#404040] hover:bg-[#3c3c3c] transition-colors"
+          className="absolute left-8 top-8 flex items-center gap-2 rounded-lg border border-[#404040] bg-[#333333] px-4 py-2 text-[#d4d4d4] transition-colors hover:bg-[#3c3c3c]"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -255,37 +276,40 @@ const InspectPage = () => {
           Back to Project
         </NavLink>
 
-        <div className="mt-24 w-[95%] flex flex-row gap-8">
+        <div className="mt-24 flex w-[95%] flex-row gap-8">
           {/* Left Section - Inspection Area */}
-          <section className="w-[65%] rounded-xl bg-[#2d2d2d] p-8 border border-[#404040] shadow-lg">
+          <section className="w-[65%] rounded-xl border border-[#404040] bg-[#2d2d2d] p-8 shadow-lg">
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-[#d4d4d4] mb-2">{projectTitle}</h1>
-              <div className="h-1 w-24 bg-gradient-to-r from-[#4C85FB] to-[#F58853] rounded-full" />
+              <h1 className="mb-2 text-2xl font-bold text-[#d4d4d4]">
+                {projectTitle}
+              </h1>
+              <div className="h-1 w-24 rounded-full bg-gradient-to-r from-[#4C85FB] to-[#F58853]" />
             </div>
 
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-[#d4d4d4] mb-4">
-                Task: <span className="bg-gradient-to-r from-[#4C85FB] to-[#F58853] bg-clip-text text-transparent">
+              <h2 className="mb-4 text-2xl font-bold text-[#d4d4d4]">
+                Task:{" "}
+                <span className="bg-gradient-to-r from-[#4C85FB] to-[#F58853] bg-clip-text text-transparent">
                   Rephrase these requests for an FAQ page
                 </span>
               </h2>
-              
+
               {/* Original Subject */}
               <div className="mb-6">
-                <p className="text-[#a0a0a0] mb-2">Original Subject:</p>
-                <div className="p-6 rounded-xl bg-[#333333] border border-[#404040] relative overflow-hidden group transition-all duration-300 hover:border-[#4C85FB]">
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity bg-gradient-to-r from-[#4C85FB] to-[#F58853]" />
-                  <p className="text-xl text-[#d4d4d4] italic relative z-10">
+                <p className="mb-2 text-[#a0a0a0]">Original Subject:</p>
+                <div className="group relative overflow-hidden rounded-xl border border-[#404040] bg-[#333333] p-6 transition-all duration-300 hover:border-[#4C85FB]">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#4C85FB] to-[#F58853] opacity-0 transition-opacity group-hover:opacity-10" />
+                  <p className="relative z-10 text-xl italic text-[#d4d4d4]">
                     {subject.title}
                   </p>
                 </div>
               </div>
-              
+
               {/* Paraphrase */}
               <div className="mb-6">
-                <p className="text-[#a0a0a0] mb-2">Paraphrase:</p>
-                <div className="p-6 rounded-xl bg-[#333333] border border-[#404040] relative overflow-hidden transition-all duration-300">
-                  <p className="text-xl text-[#4C85FB] italic">
+                <p className="mb-2 text-[#a0a0a0]">Paraphrase:</p>
+                <div className="relative overflow-hidden rounded-xl border border-[#404040] bg-[#333333] p-6 transition-all duration-300">
+                  <p className="text-xl italic text-[#4C85FB]">
                     {paraphrases.length > 0 && paraphrases[index]
                       ? paraphrases[index][0]
                       : "Loading..."}
@@ -294,11 +318,11 @@ const InspectPage = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-center gap-4 mt-8">
+              <div className="mt-8 flex justify-center gap-4">
                 {isSubmitted ? (
                   <button
                     onClick={advanceIndex}
-                    className="px-6 py-3 bg-gradient-to-r from-[#4C85FB] to-[#4169E1] text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                    className="rounded-lg bg-gradient-to-r from-[#4C85FB] to-[#4169E1] px-6 py-3 font-medium text-white transition-opacity hover:opacity-90"
                   >
                     Next ➡️
                   </button>
@@ -306,13 +330,13 @@ const InspectPage = () => {
                   <>
                     <button
                       onClick={() => updateInspection(true)}
-                      className="px-6 py-3 bg-gradient-to-r from-[#4C85FB] to-[#4169E1] text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                      className="rounded-lg bg-gradient-to-r from-[#4C85FB] to-[#4169E1] px-6 py-3 font-medium text-white transition-opacity hover:opacity-90"
                     >
                       Approve ✅
                     </button>
                     <button
                       onClick={() => updateInspection(false)}
-                      className="px-6 py-3 bg-[#404040] text-[#d4d4d4] rounded-lg font-medium hover:bg-[#505050] transition-colors"
+                      className="rounded-lg bg-[#404040] px-6 py-3 font-medium text-[#d4d4d4] transition-colors hover:bg-[#505050]"
                     >
                       Reject ❌
                     </button>
@@ -325,19 +349,25 @@ const InspectPage = () => {
           {/* Right Section - Guidelines & Progress */}
           <section className="w-[35%] space-y-8">
             {/* Progress Card */}
-            <div className="rounded-xl bg-[#2d2d2d] p-6 border border-[#404040] shadow-lg">
-              <h2 className="text-xl font-bold text-[#d4d4d4] mb-4">Inspection Progress</h2>
+            <div className="rounded-xl border border-[#404040] bg-[#2d2d2d] p-6 shadow-lg">
+              <h2 className="mb-4 text-xl font-bold text-[#d4d4d4]">
+                Inspection Progress
+              </h2>
               <div className="space-y-4">
-                <div className="flex justify-between items-center mb-2">
+                <div className="mb-2 flex items-center justify-between">
                   <span className="text-[#a0a0a0]">Progress</span>
-                  <span className="text-[#4C85FB] font-medium">
-                    {currentCount ? `${Math.round((currentCount / validationsNeeded) * 100)}%` : "0%"}
+                  <span className="font-medium text-[#4C85FB]">
+                    {currentCount
+                      ? `${Math.round((currentCount / validationsNeeded) * 100)}%`
+                      : "0%"}
                   </span>
                 </div>
-                <div className="w-full h-2 bg-[#333333] rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-[#4C85FB] rounded-full" 
-                    style={{ width: `${currentCount ? Math.round((currentCount / validationsNeeded) * 100) : 0}%` }}
+                <div className="h-2 w-full overflow-hidden rounded-full bg-[#333333]">
+                  <div
+                    className="h-full rounded-full bg-[#4C85FB]"
+                    style={{
+                      width: `${currentCount ? Math.round((currentCount / validationsNeeded) * 100) : 0}%`,
+                    }}
                   ></div>
                 </div>
                 <p className="text-xs text-[#a0a0a0]">
@@ -345,35 +375,41 @@ const InspectPage = () => {
                 </p>
               </div>
             </div>
-            
+
             {/* Guidelines Card */}
-            <div className="rounded-xl bg-[#2d2d2d] p-6 border border-[#404040] shadow-lg">
-              <h2 className="text-xl font-bold text-[#d4d4d4] mb-4">
+            <div className="rounded-xl border border-[#404040] bg-[#2d2d2d] p-6 shadow-lg">
+              <h2 className="mb-4 text-xl font-bold text-[#d4d4d4]">
                 Guidelines for Inspecting 🔍
               </h2>
-              
+
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-[#4C85FB] mb-2">What to Approve</h3>
-                  <ul className="space-y-2 pl-5 list-disc text-[#d4d4d4]">
+                  <h3 className="mb-2 text-lg font-medium text-[#4C85FB]">
+                    What to Approve
+                  </h3>
+                  <ul className="list-disc space-y-2 pl-5 text-[#d4d4d4]">
                     <li>Original meaning of sentence is preserved</li>
                     <li>Paraphrased statement is relevant and accurate</li>
                     <li>Keywords are present</li>
                   </ul>
                 </div>
-                
+
                 <div>
-                  <h3 className="text-lg font-medium text-[#F58853] mb-2">What to Reject</h3>
-                  <ul className="space-y-2 pl-5 list-disc text-[#d4d4d4]">
+                  <h3 className="mb-2 text-lg font-medium text-[#F58853]">
+                    What to Reject
+                  </h3>
+                  <ul className="list-disc space-y-2 pl-5 text-[#d4d4d4]">
                     <li>Paraphrase simply replaces words</li>
                     <li>Paraphrase changes the meaning of the original text</li>
                     <li>Poor grammar, typos, and awkward phrasing</li>
                   </ul>
                 </div>
-                
+
                 <button
-                  onClick={() => document.getElementById("guideline_modal").showModal()}
-                  className="w-full py-2 bg-[#333333] text-[#d4d4d4] rounded-lg border border-[#404040] hover:bg-[#3c3c3c] transition-colors text-sm"
+                  onClick={() =>
+                    document.getElementById("guideline_modal").showModal()
+                  }
+                  className="w-full rounded-lg border border-[#404040] bg-[#333333] py-2 text-sm text-[#d4d4d4] transition-colors hover:bg-[#3c3c3c]"
                 >
                   View Additional Examples
                 </button>
