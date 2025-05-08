@@ -50,7 +50,7 @@ const NavBar = () => {
       document.getElementById("onboardingModal").showModal();
     } else {
       console.log("Existing user found");
-      setUserInfo(filteredData);
+      setUserInfo(filteredData.data);
     }
   };
 
@@ -201,12 +201,13 @@ const NavBar = () => {
         {user !== undefined && user !== null ? (
           <details className="dropdown dropdown-end">
             <summary className="btn m-1 px-2 font-medium bg-[#333333] border-[#404040] hover:bg-[#3c3c3c] text-[#d4d4d4]">
-              <img
-                src={userInfo.profile_pic ? userInfo.profile_pic : gemIcon}
-                alt="profile photo"
-                className="mr-1 h-8 w-8 rounded-full bg-[#252526]"
-              />
-              <p>Wallet: {user && user.key.slice(-8)}</p>
+                <img
+                  src={userInfo.profile_pic ? userInfo.profile_pic : gemIcon}
+                  alt="profile photo"
+                  className="mr-1 h-8 w-8 rounded-full bg-[#252526]"
+                />
+                <p>{userInfo.username || (user && user.key.slice(-8))}</p>
+                {/* Show username if available, otherwise show wallet ID */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -275,7 +276,7 @@ const NavBar = () => {
                 id="username"
                 placeholder="Username"
                 type="text"
-                value={userInfo.userName}
+                value={userInfo.username || ""} // Fix casing to match state
                 onChange={textChange}
                 className="input m-2 border-2 border-minerDark"
               />
