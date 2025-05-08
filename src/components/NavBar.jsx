@@ -50,7 +50,7 @@ const NavBar = () => {
       document.getElementById("onboardingModal").showModal();
     } else {
       console.log("Existing user found");
-      setUserInfo(filteredData);
+      setUserInfo(filteredData.data);
     }
   };
 
@@ -201,12 +201,13 @@ const NavBar = () => {
         {user !== undefined && user !== null ? (
           <details className="dropdown dropdown-end">
             <summary className="btn m-1 px-2 font-medium bg-[#333333] border-[#404040] hover:bg-[#3c3c3c] text-[#d4d4d4]">
-              <img
-                src={userInfo.profile_pic ? userInfo.profile_pic : gemIcon}
-                alt="profile photo"
-                className="mr-1 h-8 w-8 rounded-full bg-[#252526]"
-              />
-              <p>Wallet: {user && user.key.slice(-8)}</p>
+                <img
+                  src={userInfo.profile_pic ? userInfo.profile_pic : gemIcon}
+                  alt="profile photo"
+                  className="mr-1 h-8 w-8 rounded-full bg-[#252526]"
+                />
+                <p>{userInfo.username || (user && user.key.slice(-8))}</p>
+                {/* Show username if available, otherwise show wallet ID */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -223,7 +224,7 @@ const NavBar = () => {
             </summary>
             <ul className="menu dropdown-content z-[1] w-52 rounded-box bg-[#333333] border border-[#404040] p-2 shadow-lg">
               <li>
-                <a className="text-[#d4d4d4] hover:bg-[#3c3c3c]">Settings</a>
+                <NavLink to="/account" className="text-[#d4d4d4] hover:bg-[#3c3c3c]">Account</NavLink>
               </li>
               <li>
                 <button
@@ -275,7 +276,7 @@ const NavBar = () => {
                 id="username"
                 placeholder="Username"
                 type="text"
-                value={userInfo.userName}
+                value={userInfo.username || ""} // Fix casing to match state
                 onChange={textChange}
                 className="input m-2 border-2 border-minerDark"
               />
@@ -299,7 +300,7 @@ const NavBar = () => {
           <div className="modal-action flex flex-row items-center">
             <p className="text-xs text-[#a0a0a0]">
               You can update these details later on{" "}
-              <span className="font-bold">Settings</span>
+              <span className="font-bold">Account</span>
             </p>
             <form method="dialog">
               <button className="btn bg-[#333333] hover:translate-x-1 hover:animate-pulse hover:bg-[#3c3c3c]">

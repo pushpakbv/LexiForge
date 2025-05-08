@@ -43,6 +43,16 @@ const InspectPage = () => {
     isValid: null,
   });
 
+  // Rewards transaction format
+  // const [reward, setReward] = useState({
+  //   project_title: "",
+  //   subject_id: location.state,
+  //   miner_id: "",
+  //   inspector_id: "",
+  //   paraphrase_id: "", // paraphrase being reviewed
+  //   gem_payout: 0,
+  // });
+
   // Get subject data - for title
   const getSubject = async () => {
     const item = await getDoc({
@@ -62,7 +72,7 @@ const InspectPage = () => {
     setSubject(filteredData);
   };
 
-  // get paraphrase and check progress
+  // get parahrase and check progress
   const getParaphrase = async () => {
     try {
       const data = await listDocs({
@@ -97,20 +107,11 @@ const InspectPage = () => {
     getParaphrase();
   }, []);
 
-  // Method - Add paraphrases to subject and refresh list
+  // Method - Add paraphases to subject and refresh list
 
   const updateInspection = async (booleanInput) => {
     try {
-      // First check if an inspection already exists for this user and paraphrase
-      const existingInspections = await listDocs({
-        collection: "inspections",
-        filter: {
-          data: {
-            inspector_id: user.key,
-            paraphrase_id: paraphrases[index][1],
-          },
-        },
-      });
+      const key = nanoid();
 
       const updatedData = {
         ...transaction,
@@ -119,29 +120,14 @@ const InspectPage = () => {
         paraphrase_id: paraphrases[index][1],
       };
 
-      // Handle existing or new inspection appropriately
-      if (existingInspections.items.length > 0) {
-        // Update existing inspection
-        const existingInspection = existingInspections.items[0];
-        await setDoc({
-          collection: "inspections",
-          doc: {
-            key: existingInspection.key,
-            data: updatedData,
-            version: existingInspection.version, // Include version
-          },
-        });
-      } else {
-        // Create new inspection
-        const key = nanoid();
-        await setDoc({
-          collection: "inspections",
-          doc: {
-            key,
-            data: updatedData,
-          },
-        });
-      }
+      // Step 1: Inspections - Add transaction validation
+      await setDoc({
+        collection: "inspections",
+        doc: {
+          key,
+          data: updatedData,
+        },
+      });
 
       console.log(`${booleanInput ? "Approved" : "Rejected"}`, updatedData);
 
@@ -157,8 +143,9 @@ const InspectPage = () => {
       // Shift to next para
       setIsSubmitted(true);
 
+      // Step 3: Rewards - Create transaction reward (KIV)
     } catch (error) {
-      console.error("Error updating inspection:", error);
+      console.error("Error updating insepection:", error);
     }
   };
 
@@ -195,9 +182,8 @@ const InspectPage = () => {
       await setDoc({
         collection: "paraphrases",
         doc: {
-          key: data.key,
+          ...data,
           data: updatedData,
-          version: data.version
         },
       });
     } catch (error) {
@@ -206,13 +192,36 @@ const InspectPage = () => {
   };
 
   const advanceIndex = () => {
-    if (index + 1 > paraphrases.length) {
+    // Check if we're at the end of the paraphrases array
+    if (index + 1 >= paraphrases.length) {
+      // If we're at the end, show a message or handle it appropriately
+      console.log("No more paraphrases to review");
       return;
     }
 
-    setIndex(index + 1);
-    setCurrentCount(paraphrases[index][1]);
-    setIsSubmitted(false);
+    try {
+      // Advance to the next paraphrase
+      const nextIndex = index + 1;
+      console.log(`Moving from paraphrase ${index} to ${nextIndex}`);
+      
+      // Set the new index
+      setIndex(nextIndex);
+      
+      // Update the current count for the next paraphrase
+      if (paraphrases[nextIndex] && paraphrases[nextIndex][2] !== undefined) {
+        console.log(`Setting current count to ${paraphrases[nextIndex][2]}`);
+        setCurrentCount(paraphrases[nextIndex][2]);
+      } else {
+        console.log("Count data not available for next paraphrase");
+      }
+      
+      // Reset the submitted state
+      setIsSubmitted(false);
+      
+      console.log("Successfully advanced to next paraphrase");
+    } catch (error) {
+      console.error("Error advancing to next paraphrase:", error);
+    }
   };
 
   return (
@@ -251,203 +260,131 @@ const InspectPage = () => {
           <section className="w-[65%] rounded-xl bg-[#2d2d2d] p-8 border border-[#404040] shadow-lg">
             <div className="mb-8">
               <h1 className="text-2xl font-bold text-[#d4d4d4] mb-2">{projectTitle}</h1>
-              <div className="h-1 w-24 bg-gradient-to-r from-[#F58853] to-[#4C85FB] rounded-full" />
+              <div className="h-1 w-24 bg-gradient-to-r from-[#4C85FB] to-[#F58853] rounded-full" />
             </div>
 
-            <div>
-              <label className="text-[#d4d4d4] mb-2 block">Original Subject:</label>
-              <div className="mb-6 p-4 bg-[#333333] rounded-lg border border-[#404040]">
-                <p className="text-xl text-[#d4d4d4] italic">{subject.title}</p>
-              </div>
-
-              <label className="text-[#d4d4d4] mb-2 block">Paraphrase:</label>
-              <div className="mb-6 p-4 bg-[#333333] rounded-lg border border-[#404040]">
-                <p className="text-xl text-[#d4d4d4] italic">
-                  {paraphrases.length > 0 && paraphrases[index]
-                    ? paraphrases[index][0]
-                    : "Loading..."}
-                </p>
-              </div>
-
-              {/* Inspection Actions */}
-              {isSubmitted ? (
-                <button
-                  onClick={advanceIndex}
-                  className="w-full py-3 bg-gradient-to-r from-[#F58853] to-[#4C85FB] text-white rounded-lg hover:opacity-90 transition-opacity"
-                >
-                  Next ➡️
-                </button>
-              ) : (
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => updateInspection(true)}
-                    className="flex-1 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Approve ✅
-                  </button>
-                  <button
-                    onClick={() => updateInspection(false)}
-                    className="flex-1 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    Reject ❌
-                  </button>
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-[#d4d4d4] mb-4">
+                Task: <span className="bg-gradient-to-r from-[#4C85FB] to-[#F58853] bg-clip-text text-transparent">
+                  Rephrase these requests for an FAQ page
+                </span>
+              </h2>
+              
+              {/* Original Subject */}
+              <div className="mb-6">
+                <p className="text-[#a0a0a0] mb-2">Original Subject:</p>
+                <div className="p-6 rounded-xl bg-[#333333] border border-[#404040] relative overflow-hidden group transition-all duration-300 hover:border-[#4C85FB]">
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity bg-gradient-to-r from-[#4C85FB] to-[#F58853]" />
+                  <p className="text-xl text-[#d4d4d4] italic relative z-10">
+                    {subject.title}
+                  </p>
                 </div>
-              )}
+              </div>
+              
+              {/* Paraphrase */}
+              <div className="mb-6">
+                <p className="text-[#a0a0a0] mb-2">Paraphrase:</p>
+                <div className="p-6 rounded-xl bg-[#333333] border border-[#404040] relative overflow-hidden transition-all duration-300">
+                  <p className="text-xl text-[#4C85FB] italic">
+                    {paraphrases.length > 0 && paraphrases[index]
+                      ? paraphrases[index][0]
+                      : "Loading..."}
+                  </p>
+                </div>
+              </div>
 
-              {/* Progress Indicator */}
-              <div className="mt-6 p-4 bg-[#333333] rounded-lg border border-[#404040]">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[#d4d4d4]">Inspection Progress</span>
-                  <span className="text-[#d4d4d4]">
-                    {currentCount ? `${Math.round((currentCount / validationsNeeded) * 100)}%` : '0%'}
+              {/* Action Buttons */}
+              <div className="flex justify-center gap-4 mt-8">
+                {isSubmitted ? (
+                  <button
+                    onClick={advanceIndex}
+                    className="px-6 py-3 bg-gradient-to-r from-[#4C85FB] to-[#4169E1] text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                  >
+                    Next ➡️
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => updateInspection(true)}
+                      className="px-6 py-3 bg-gradient-to-r from-[#4C85FB] to-[#4169E1] text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                    >
+                      Approve ✅
+                    </button>
+                    <button
+                      onClick={() => updateInspection(false)}
+                      className="px-6 py-3 bg-[#404040] text-[#d4d4d4] rounded-lg font-medium hover:bg-[#505050] transition-colors"
+                    >
+                      Reject ❌
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Right Section - Guidelines & Progress */}
+          <section className="w-[35%] space-y-8">
+            {/* Progress Card */}
+            <div className="rounded-xl bg-[#2d2d2d] p-6 border border-[#404040] shadow-lg">
+              <h2 className="text-xl font-bold text-[#d4d4d4] mb-4">Inspection Progress</h2>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-[#a0a0a0]">Progress</span>
+                  <span className="text-[#4C85FB] font-medium">
+                    {currentCount ? `${Math.round((currentCount / validationsNeeded) * 100)}%` : "0%"}
                   </span>
                 </div>
-                <div className="h-2 bg-[#404040] rounded-full">
-                  <div
-                    className="h-full bg-gradient-to-r from-[#F58853] to-[#4C85FB] rounded-full transition-all"
-                    style={{
-                      width: `${currentCount ? Math.round((currentCount / validationsNeeded) * 100) : 0}%`,
-                    }}
-                  />
+                <div className="w-full h-2 bg-[#333333] rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-[#4C85FB] rounded-full" 
+                    style={{ width: `${currentCount ? Math.round((currentCount / validationsNeeded) * 100) : 0}%` }}
+                  ></div>
                 </div>
-                <p className="mt-2 text-xs text-[#a0a0a0]">Subject ID: {subject.id}</p>
+                <p className="text-xs text-[#a0a0a0]">
+                  Subject ID: {subject.id}
+                </p>
               </div>
-
-              {/* See Additional Examples Button */}
-              <button
-                onClick={() => document.getElementById('examples-modal').showModal()}
-                className="mt-6 w-full py-3 bg-[#333333] text-[#d4d4d4] rounded-lg border border-[#404040] hover:bg-[#3c3c3c] transition-colors"
-              >
-                See Additional Examples
-              </button>
             </div>
-          </section>
-
-          {/* Right Section - Guidelines */}
-          <section className="w-[35%] rounded-xl bg-[#2d2d2d] p-8 border border-[#404040] shadow-lg">
-            <h2 className="text-xl font-bold text-[#d4d4d4] mb-6">Guidelines for Inspecting 🔍</h2>
             
-            <div className="mb-6">
-              <h3 className="text-[#d4d4d4] mb-2 font-semibold">What should I approve?</h3>
-              <ul className="space-y-2 text-[#a0a0a0]">
-                <li className="flex items-center gap-2">
-                  <span className="text-green-500">✓</span>
-                  Original meaning of sentence is preserved
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-green-500">✓</span>
-                  Paraphrased statement is relevant and accurate
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-green-500">✓</span>
-                  Keywords are present
-                </li>
-              </ul>
+            {/* Guidelines Card */}
+            <div className="rounded-xl bg-[#2d2d2d] p-6 border border-[#404040] shadow-lg">
+              <h2 className="text-xl font-bold text-[#d4d4d4] mb-4">
+                Guidelines for Inspecting 🔍
+              </h2>
+              
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-[#4C85FB] mb-2">What to Approve</h3>
+                  <ul className="space-y-2 pl-5 list-disc text-[#d4d4d4]">
+                    <li>Original meaning of sentence is preserved</li>
+                    <li>Paraphrased statement is relevant and accurate</li>
+                    <li>Keywords are present</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-medium text-[#F58853] mb-2">What to Reject</h3>
+                  <ul className="space-y-2 pl-5 list-disc text-[#d4d4d4]">
+                    <li>Paraphrase simply replaces words</li>
+                    <li>Paraphrase changes the meaning of the original text</li>
+                    <li>Poor grammar, typos, and awkward phrasing</li>
+                  </ul>
+                </div>
+                
+                <button
+                  onClick={() => document.getElementById("guideline_modal").showModal()}
+                  className="w-full py-2 bg-[#333333] text-[#d4d4d4] rounded-lg border border-[#404040] hover:bg-[#3c3c3c] transition-colors text-sm"
+                >
+                  View Additional Examples
+                </button>
+              </div>
             </div>
-
-            <div className="mb-6">
-              <h3 className="text-[#d4d4d4] mb-2 font-semibold">What should I reject?</h3>
-              <ul className="space-y-2 text-[#a0a0a0]">
-                <li className="flex items-center gap-2">
-                  <span className="text-red-500">✗</span>
-                  Paraphrase simply replaces words
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-red-500">✗</span>
-                  Paraphrase changes the meaning of the original text
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-red-500">✗</span>
-                  Poor grammar, typos and awkward phrasing
-                </li>
-              </ul>
-            </div>
-
-            <GuidelineModal />
           </section>
         </div>
 
-        {/* Examples Modal */}
-        <dialog id="examples-modal" className="modal bg-[#1e1e1e]/80">
-          <div className="modal-box max-w-4xl max-h-[80vh] bg-[#2d2d2d] text-[#d4d4d4] overflow-hidden">
-            <h3 className="font-bold text-lg mb-4">Additional Examples</h3>
-            <div className="overflow-y-auto max-h-[calc(80vh-8rem)]">
-              <table className="w-full">
-                <thead className="sticky top-0 bg-[#2d2d2d]">
-                  <tr className="border-b border-[#404040]">
-                    <th className="py-3 px-4 text-left">Original Subject</th>
-                    <th className="py-3 px-4 text-left">Paraphrases</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-[#404040]">
-                    <td className="py-4 px-4 align-top">I want to order bak chor mee.</td>
-                    <td className="py-4 px-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-green-500">
-                          <span>✓</span> Can I have a plate of bak chor mee?
-                        </div>
-                        <div className="flex items-center gap-2 text-red-500">
-                          <span>✗</span> I want to eat chicken rice. <span className="text-[#a0a0a0] text-sm">(not relevant)</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-red-500">
-                          <span>✗</span> I am consumed by the great desire to devour some bak chor mee now. <span className="text-[#a0a0a0] text-sm">(not natural)</span>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr className="border-b border-[#404040]">
-                    <td className="py-4 px-4 align-top">How do I get to Marina Bay Sands?</td>
-                    <td className="py-4 px-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-green-500">
-                          <span>✓</span> What's the best way to reach Marina Bay Sands?
-                        </div>
-                        <div className="flex items-center gap-2 text-green-500">
-                          <span>✓</span> Could you direct me to Marina Bay Sands?
-                        </div>
-                        <div className="flex items-center gap-2 text-red-500">
-                          <span>✗</span> Where is Sentosa? <span className="text-[#a0a0a0] text-sm">(different location)</span>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr className="border-b border-[#404040]">
-                    <td className="py-4 px-4 align-top">The museum opens at 9 AM daily.</td>
-                    <td className="py-4 px-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-green-500">
-                          <span>✓</span> You can visit the museum from 9 AM every day.
-                        </div>
-                        <div className="flex items-center gap-2 text-red-500">
-                          <span>✗</span> The museum open at 9 AM daily. <span className="text-[#a0a0a0] text-sm">(grammatical error)</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-red-500">
-                          <span>✗</span> The museum closes at 6 PM. <span className="text-[#a0a0a0] text-sm">(different information)</span>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div className="modal-action mt-4 sticky bottom-0 bg-[#2d2d2d] py-2">
-              <form method="dialog">
-                <button className="px-4 py-2 bg-[#333333] rounded-lg border border-[#404040] hover:bg-[#3c3c3c] transition-colors">
-                  Close
-                </button>
-              </form>
-            </div>
-          </div>
-          <form method="dialog" className="modal-backdrop">
-            <button>close</button>
-          </form>
-        </dialog>
-
-        <div className="mt-8 flex justify-center">
-          <FeedbackButton id={location.state} />
-        </div>
+        <FeedbackButton id={location.state} />
       </div>
+      <GuidelineModal />
     </motion.div>
   );
 };
