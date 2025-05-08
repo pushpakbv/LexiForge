@@ -1,0 +1,50 @@
+{
+  "General": [
+    {
+      "question": "What is LexiForge about?",
+      "answer": "Today's AI chatbots struggle with subtle language differences. LexiForge collects contributions from individuals to train the AI to learn different languages and cultures. Identical to how miners excavate and refine raw minerals into dazzling gemstones, LexiForge aims to generate top-notch data that you can use to train your AI-powered chatbots. Users can take on multiple roles when onboarding this platform: Creators (create projects and tasks), Miners (generate and submit paraphrases) and Inspectors (review and validate submissions)"
+    },
+    {
+      "question": "How do I come onboard this application?",
+      "answer": "You may sign in using your internet identity. To get started, you are only required to create a username and upload a profile picture."
+    },
+    {
+      "question": "How do I get paid?",
+      "answer": "Every task submission that gets approved will earn you gems that can be exchanged for tokens."
+    }
+  ],
+  "Miners": [
+    {
+      "question": "[Miner] What are the requirements for miners?",
+      "answer": "Miners can sign up immediately and begin generating paraphrases for the available projects. Each project has its requirements and guidelines that you will need to follow."
+    },
+    {
+      "question": "[Miner] Are there different amounts of rewards for different language translations?",
+      "answer": "Reward amounts differ from project to project. Kindly refer to the project details for more information."
+    }
+  ],
+  "Inspectors": [
+    {
+      "question": "[Inspector] Who is an Inspector? What is the criteria to becoming one?",
+      "answer": "Inspectors will evaluate the paraphrases submitted by their peer Miners and either approve or disapprove the submissions based on the validation criteria. Default Inspectors for the platform are the System Administrators. Miners can eventually qualify as an Inspector after completing a minimum of 100 jobs and obtaining a validation score of at least 85%."
+    },
+    {
+      "question": "[Inspector] What is the consensus system?",
+      "answer": "Every paraphrase submitted requires a minimum consensus of 80% among Inspectors in order to be approved or rejected."
+    }
+  ],
+  "Creators": [
+    {
+      "question": "[Creator] How does the validation system work? How can I be assured of the relevancy and appropriateness of the paraphrases?",
+      "answer": "The system uses consensus mechanism to validate paraphrases. Creators can choose how many validators will be reviewing each submitted paraphrase. Minimally 80% of Inspectors must opt for the same, unanimous decision - this determines whether a paraphrase is approved or rejected."
+    },
+    {
+      "question": "[Creator] What are the advantages of opting for this system?",
+      "answer": "Transactions are transparent when done via LexiForge system. Creators can tell exactly how many people have contributed to each set of paraphrases. In the future, Creators will also be able to curate datasets based on the demographic of users (age, gender and more)."
+    },
+    {
+      "question": "[Creator] How much does it cost to use this service?",
+      "answer": "You can create new projects and upload data for free. You will need to pay gems to miners and inspectors for every successfully validated paraphrase."
+    }
+  ]
+}

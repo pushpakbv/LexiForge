@@ -1,0 +1,66 @@
+{
+  "users": {
+    "w27ao-7eeha-lkeys-qhwey-tfcek-3s26f-y2zlb-tslkk-633u6-ftaxc-7qe": {
+      "email": "pichu@gmail.com",
+      "username": "pichu",
+      "profile_pic": "https://vzxr6-nqaaa-aaaal-aja7q-cai.icp0.io/images/w27ao-7eeha-lkeys-qhwey-tfcek-3s26f-y2zlb-tslkk-633u6-ftaxc-7qe-1f680.png",
+      "isValidator": true,
+      "job_count": 2010,
+      "total_gems": 420420,
+      "current_gems": 1337
+    }
+  },
+  "projects": {
+    "<ProjectID1>": {
+      "title": "Fintech App",
+      "creator_id": "<userid1>",
+      "subjects": ["<SubjectID1>", "<SubjectID2>", "<SubjectID3>"],
+      "language": "English",
+      "miner_payout": 0.2,
+      "inspector_payout": 0.01,
+      "paraphrases_needed": 100,
+      "validations_needed": 20,
+      "creation_date": "23/5/22",
+      "isComplete": false
+    }
+  },
+  "subject": {
+    "id": "232323232323",
+    "title": "I need to update my password",
+    "isMined": false,
+    "isValidated": false,
+    "completion_date": ""
+  },
+  "paraphrases": {
+    "transaction_paraphrase_id_1": {
+      "project_title": "MIT research proj",
+      "miner_id": "w27ao-7eeha-lkeys-qhwey-tfcek-3s26f-y2zlb-tslkk-633u6-ftaxc-7qe",
+      "subject_id": "subject_id_1",
+      "paraphrase": "Where to update my profile picture",
+      "gem_payout": 20,
+      "isApproved": "null/true/false",
+      "approvalCount": 0,
+      "rejectionCount": 0
+    }
+  },
+  "inspections": {
+    "transaction_inspector_id_1": {
+      "inspector_id": "w27ao-7eeha-lkeys-qhwey-tfcek-3s26f-y2zlb-tslkk-633u6-ftaxc-7qe",
+      "project_title": "MIT research proj",
+      "subject_id": "subject_id_1",
+      "paraphrase_id": "transaction_paraphrase_id_1",
+      "gem_payout": 20,
+      "isValid": "null/true/false"
+    }
+  },
+  "rewards": {
+    "transaction_reward_id_1": {
+      "project_title": "MIT research proj",
+      "inspector_id": "w27ao-7eeha-lkeys-qhwey-tfcek-3s26f-y2zlb-tslkk-633u6-ftaxc-7qe",
+      "miner_id": "w27ao-7eeha-lkeys-qhwey-tfcek-3s26f-y2zlb-tslkk-633u6-ftaxc-7qe",
+      "subject_id": "subject_id_1",
+      "paraphrase_id": "transaction_paraphrase_id_1",
+      "gem_payout": 10
+    }
+  }
+}
