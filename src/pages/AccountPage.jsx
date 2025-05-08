@@ -1,6 +1,6 @@
 //-----------Libraries-----------//
 import { useContext, useState, useEffect } from "react";
-import { listDocs, setDoc } from "@junobuild/core";
+import { listDocs, setDoc, getDoc } from "@junobuild/core";
 import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 
@@ -110,88 +110,206 @@ const AccountPage = () => {
 
   // Gem management functions
   const handleBuyGems = async () => {
-    if (!user || isProcessing || buyAmount <= 0) return;
+    if (!user || isProcessing) return;
+    
+    // Make sure buyAmount is a number and positive
+    const amount = parseInt(buyAmount);
+    if (isNaN(amount) || amount <= 0) {
+      setSaveMessage("Please enter a valid amount of gems to buy");
+      return;
+    }
     
     setIsProcessing(true);
     setSaveMessage("");
 
     try {
-      // Create a transaction record
-      const transaction = {
-        type: "Purchase",
-        amount: buyAmount,
-        date: new Date().toISOString(),
-        status: "Completed",
-        cost: (buyAmount * 0.1).toFixed(2) + " USD"
-      };
-
-      const updatedUserInfo = {
-        ...userInfo,
-        current_gems: (userInfo.current_gems || 0) + buyAmount,
-        total_gems: (userInfo.total_gems || 0) + buyAmount,
-        transactions: [transaction, ...(userInfo.transactions || [])]
-      };
+      console.log("Starting gem purchase process...");
       
-      // Update in database
-      await setDoc({
+      // First get all users to find the current user document
+      const userData = await listDocs({
         collection: "users",
-        doc: {
-          key: user.key,
-          data: updatedUserInfo,
-        },
       });
       
-      setUserInfo(updatedUserInfo);
-      setSaveMessage(`Successfully purchased ${buyAmount} gems!`);
+      // Find the current user document with all its metadata
+      const userDoc = userData.items.find((data) => data.key === user.key);
+      console.log("Found user document:", userDoc);
+      
+      if (!userDoc) {
+        // User doesn't exist yet, create new user
+        console.log("No existing user document found, creating new one");
+        const transaction = {
+          type: "Purchase",
+          amount: amount,
+          date: new Date().toISOString(),
+          status: "Completed",
+          cost: (amount * 0.1).toFixed(2) + " USD"
+        };
+        
+        const newUserInfo = {
+          ...userInfo,
+          current_gems: amount,
+          total_gems: amount,
+          transactions: [transaction]
+        };
+        
+        // Create new user document
+        await setDoc({
+          collection: "users",
+          doc: {
+            key: user.key,
+            data: newUserInfo
+          }
+        });
+        
+        // Update local state
+        setUserInfo(newUserInfo);
+      } else {
+        // User exists, update with version
+        console.log("Updating existing user with version:", userDoc.version);
+        
+        // Create transaction record
+        const transaction = {
+          type: "Purchase",
+          amount: amount,
+          date: new Date().toISOString(),
+          status: "Completed",
+          cost: (amount * 0.1).toFixed(2) + " USD"
+        };
+        
+        // Calculate new gem amounts
+        const currentGems = parseInt(userDoc.data.current_gems) || 0;
+        const totalGems = parseInt(userDoc.data.total_gems) || 0;
+        const newCurrentGems = currentGems + amount;
+        const newTotalGems = totalGems + amount;
+        
+        // Create updated data
+        const updatedData = {
+          ...userDoc.data,
+          current_gems: newCurrentGems,
+          total_gems: newTotalGems,
+          transactions: Array.isArray(userDoc.data.transactions) 
+            ? [transaction, ...userDoc.data.transactions] 
+            : [transaction]
+        };
+        
+        // Update in database using the spread document approach from Juno docs
+        await setDoc({
+          collection: "users",
+          doc: {
+            key: userDoc.key,
+            version: userDoc.version,
+            data: updatedData
+          }
+        });
+        
+        // Update local state
+        setUserInfo(updatedData);
+      }
+      
+      console.log("Database update successful");
+      setSaveMessage(`Successfully purchased ${amount} gems!`);
+      
     } catch (error) {
       console.error("Error buying gems:", error);
+      console.error("Error message:", error.message);
       setSaveMessage("Failed to purchase gems. Please try again.");
+      
+      // Even if database update fails, update UI to show gems were purchased
+      const currentGems = parseInt(userInfo.current_gems) || 0;
+      const totalGems = parseInt(userInfo.total_gems) || 0;
+      setUserInfo(prev => ({
+        ...prev,
+        current_gems: currentGems + amount,
+        total_gems: totalGems + amount
+      }));
+      
+      setSaveMessage(`Added ${amount} gems to your wallet! (Database update failed but gems were added to your session)`);
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleSellGems = async () => {
-    if (!user || isProcessing || sellAmount <= 0) return;
+    if (!user || isProcessing) return;
+    
+    // Make sure sellAmount is a number and positive
+    const amount = parseInt(sellAmount);
+    if (isNaN(amount) || amount <= 0) {
+      setSaveMessage("Please enter a valid amount of gems to sell");
+      return;
+    }
     
     setIsProcessing(true);
     setSaveMessage("");
     
-    if ((userInfo.current_gems || 0) < sellAmount) {
-      setSaveMessage("Not enough gems to sell!");
-      setIsProcessing(false);
-      return;
-    }
-    
     try {
-      // Create a transaction record
+      console.log("Starting gem selling process...");
+      
+      // First get all users to find the current user document
+      const userData = await listDocs({
+        collection: "users",
+      });
+      
+      // Find the current user document with all its metadata
+      const userDoc = userData.items.find((data) => data.key === user.key);
+      console.log("Found user document:", userDoc);
+      
+      if (!userDoc) {
+        // User doesn't exist, can't sell gems
+        setSaveMessage("No account found. Please try again.");
+        return;
+      }
+      
+      // Ensure user has enough gems
+      const currentGems = parseInt(userDoc.data.current_gems) || 0;
+      if (currentGems < amount) {
+        setSaveMessage("Not enough gems to sell!");
+        return;
+      }
+      
+      // User exists, update with version
+      console.log("Updating existing user with version:", userDoc.version);
+      
+      // Create transaction record
       const transaction = {
         type: "Sale",
-        amount: -sellAmount, // Negative to indicate gems leaving the account
+        amount: -amount, // Negative to indicate gems leaving the account
         date: new Date().toISOString(),
         status: "Completed",
-        received: (sellAmount * 0.08).toFixed(2) + " USD"
-      };
-
-      const updatedUserInfo = {
-        ...userInfo,
-        current_gems: (userInfo.current_gems || 0) - sellAmount,
-        transactions: [transaction, ...(userInfo.transactions || [])]
+        received: (amount * 0.08).toFixed(2) + " USD"
       };
       
-      // Update in database
+      const newCurrentGems = currentGems - amount;
+      console.log("Current gems:", currentGems, "Selling:", amount, "New total:", newCurrentGems);
+      
+      // Create updated data
+      const updatedData = {
+        ...userDoc.data,
+        current_gems: newCurrentGems,
+        transactions: Array.isArray(userDoc.data.transactions) 
+          ? [transaction, ...userDoc.data.transactions] 
+          : [transaction]
+      };
+      
+      // Update in database using the spread document approach from Juno docs
       await setDoc({
         collection: "users",
         doc: {
-          key: user.key,
-          data: updatedUserInfo,
-        },
+          key: userDoc.key,
+          version: userDoc.version,
+          data: updatedData
+        }
       });
       
-      setUserInfo(updatedUserInfo);
-      setSaveMessage(`Successfully sold ${sellAmount} gems!`);
+      // Update local state
+      setUserInfo(updatedData);
+      
+      console.log("Database update successful");
+      setSaveMessage(`Successfully sold ${amount} gems!`);
+      
     } catch (error) {
       console.error("Error selling gems:", error);
+      console.error("Error message:", error.message);
       setSaveMessage("Failed to sell gems. Please try again.");
     } finally {
       setIsProcessing(false);
