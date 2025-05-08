@@ -2,7 +2,7 @@ const FeedbackButton = ({ id }) => {
   return (
     <div>
       <button
-        className="btn fixed bottom-16 left-20 bg-white shadow-lg"
+        className="fixed bottom-8 left-20 px-4 py-2 text-[#d4d4d4] bg-[#333333] rounded-lg border border-[#404040] hover:bg-[#3c3c3c] transition-colors shadow-lg"
         onClick={() => document.getElementById("my_modal_3").showModal()}
       >
         Feedback?

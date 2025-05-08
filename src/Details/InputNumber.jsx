@@ -1,7 +1,7 @@
 const InputNumber = ({ id, placeholder, step, min, handleChange, value }) => {
   return (
     <input
-      className=" h-12 w-full rounded-lg border-[1px] bg-transparent p-2 text-text hover:translate-y-[-2px] hover:border-[2px]"
+      className="h-12 w-full rounded-lg border border-[#404040] bg-[#333333] p-2 text-[#d4d4d4] hover:border-[#505050] transition-all duration-200"
       id={id}
       type="number"
       step={step}

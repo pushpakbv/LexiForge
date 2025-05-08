@@ -194,7 +194,7 @@ const MinePage = () => {
         ease: "easeInOut",
       }}
     >
-      <div className="absolute left-1/2 top-1/2 z-30 flex h-full w-full -translate-x-1/2 -translate-y-[50%] transform flex-col items-center bg-[#1e1e1e] shadow-xl">
+      <div className="absolute left-1/2 top-1/2 z-30 flex h-full w-full -translate-x-1/2 -translate-y-[50%] transform flex-col items-center bg-[#1A1A1A] shadow-xl">
         {/* Back Button */}
         <NavLink
           to={`/project/${id}`}
