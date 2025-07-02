@@ -97,7 +97,42 @@ const NavBar = () => {
         filename,
       });
       console.log("Uploaded Profile pic", url);
-      setUserInfo({ ...userInfo, profile_pic: url.downloadUrl });
+      
+      // Set the profile pic URL in local state
+      const updatedUserInfo = { ...userInfo, profile_pic: url.downloadUrl };
+      setUserInfo(updatedUserInfo);
+      
+      // Update the user document with the new profile pic URL
+      // First check if user already exists to get version
+      const userData = await listDocs({
+        collection: "users",
+      });
+      
+      const existingUser = userData.items.find((data) => data.key === user.key);
+      
+      if (existingUser) {
+        // User exists, update with version
+        await setDoc({
+          collection: "users",
+          doc: {
+            key: user.key,
+            version: existingUser.version,
+            data: updatedUserInfo,
+          },
+        });
+        console.log("Updated user profile with new profile picture");
+      } else {
+        // New user, create without version
+        await setDoc({
+          collection: "users",
+          doc: {
+            key: user.key,
+            data: updatedUserInfo,
+          },
+        });
+        console.log("Created new user with profile picture");
+      }
+      
       setFile(null);
     } catch (error) {
       console.log("Error uploading profile image", error);

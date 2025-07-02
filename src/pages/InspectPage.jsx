@@ -182,7 +182,8 @@ const InspectPage = () => {
       await setDoc({
         collection: "paraphrases",
         doc: {
-          ...data,
+          key: data.key,
+          version: data.version, // Adding the version parameter
           data: updatedData,
         },
       });

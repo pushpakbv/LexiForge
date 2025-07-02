@@ -92,13 +92,35 @@ const AccountPage = () => {
     setSaveMessage("");
 
     try {
-      await setDoc({
+      // First get the current user document to retrieve its version
+      const userData = await listDocs({
         collection: "users",
-        doc: {
-          key: user.key,
-          data: userInfo,
-        },
       });
+      
+      // Find the current user document with all its metadata
+      const userDoc = userData.items.find((data) => data.key === user.key);
+      
+      if (userDoc) {
+        // User exists, update with version
+        console.log("Updating existing user profile with version:", userDoc.version);
+        await setDoc({
+          collection: "users",
+          doc: {
+            key: userDoc.key,
+            version: userDoc.version,
+            data: userInfo,
+          },
+        });
+      } else {
+        // New user, create without version
+        await setDoc({
+          collection: "users",
+          doc: {
+            key: user.key,
+            data: userInfo,
+          },
+        });
+      }
       setSaveMessage("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
