@@ -2,14 +2,14 @@
 
 //-----------Components-----------//
 import NavBar from "../components/NavBar";
-import Chart from "../Components/Dashboard/Chart";
-import Wallet from "../Components/Dashboard/Wallet";
-import ToolBar from "../Components/Dashboard/Toolbar";
-import OngoingProjects from "../Components/Dashboard/OngoingProjects";
-import ProjectDetails from "../Components/Dashboard/ProjectDetails";
+import Chart from "../components/Dashboard/Chart";
+import Wallet from "../components/Dashboard/Wallet";
+import ToolBar from "../components/Dashboard/Toolbar";
+import OngoingProjects from "../components/Dashboard/OngoingProjects";
+import ProjectDetails from "../components/Dashboard/ProjectDetails";
 import { useEffect, useState } from "react";
-import NewProject from "../Components/marketplace/NewProject";
-import CreatorChart from "../Components/Dashboard/CreatorChart";
+import NewProject from "../components/marketplace/NewProject";
+import CreatorChart from "../components/Dashboard/CreatorChart";
 import { useDarkMode } from "../providers/DarkModeProvider";
 
 const DashboardPage = () => {

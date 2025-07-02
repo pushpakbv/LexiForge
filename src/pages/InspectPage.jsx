@@ -6,11 +6,11 @@ import { getDoc, listDocs, setDoc } from "@junobuild/core";
 import { nanoid } from "nanoid";
 
 //-----------Components-----------//
-import FeedbackButton from "../Components/FeedbackButton";
+import FeedbackButton from "../components/FeedbackButton";
 
 //-----------Providers-----------//
 import { AuthContext } from "../Auth";
-import GuidelineModal from "../Components/Inspect/GuidelineModal";
+import GuidelineModal from "../components/Inspect/GuidelineModal";
 
 const InspectPage = () => {
   const { user } = useContext(AuthContext);

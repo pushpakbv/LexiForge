@@ -11,7 +11,7 @@ import InputSubjects from "../Details/InputSubjects";
 
 //-----------Providers-----------//
 import { AuthContext } from "../Auth";
-import FeedbackButton from "../Components/FeedbackButton";
+import FeedbackButton from "../components/FeedbackButton";
 
 const MinePage = () => {
   const { user } = useContext(AuthContext);
